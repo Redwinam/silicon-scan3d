@@ -19,7 +19,7 @@ SiliconScan3D 是一个利用 Apple 的 Object Capture API 将照片转化为高
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/silicon-scan3d.git
+git clone https://github.com/redwinam/silicon-scan3d.git
 cd silicon-scan3d
 
 # 安装Python依赖
@@ -116,7 +116,9 @@ python object_capture.py --input "/path/to/images" --output "./model.usdz"
 
 ## 许可证
 
-MIT
+本作品采用 [知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议](http://creativecommons.org/licenses/by-nc-sa/4.0/) 进行许可。
+
+[![CC BY-NC-SA 4.0](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 ## 创建日期
 
