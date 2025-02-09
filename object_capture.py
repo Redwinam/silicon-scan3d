@@ -93,11 +93,32 @@ RunLoop.main.run()
             Path('reconstruct').unlink()
 
 if __name__ == '__main__':
-    input_folder = os.path.expanduser("~/Pictures/Sony Scan Resized")
-    output_file = os.path.expanduser("~/Desktop/model_v4.usdz")
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Create 3D model using Apple Object Capture API')
+    parser.add_argument('--input', '-i', 
+                        default=os.path.expanduser("~/Pictures/Sony Scan Resized"),
+                        help='Input folder containing images')
+    parser.add_argument('--output', '-o', 
+                        default='./model.usdz',
+                        help='Output USDZ file path')
+    
+    args = parser.parse_args()
+    
+    # 确保输入路径存在
+    if not os.path.exists(args.input):
+        print(f"Error: Input folder '{args.input}' does not exist")
+        exit(1)
+    
+    # 确保输出目录存在
+    output_dir = os.path.dirname(os.path.abspath(args.output))
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     
     print(f"Starting 3D reconstruction...")
-    print(f"Input folder: {input_folder}")
-    print(f"Output file: {output_file}")
+    print(f"Input folder: {args.input}")
+    print(f"Output file: {args.output}")
+    
+    create_3d_model(args.input, args.output)
     
     create_3d_model(input_folder, output_file)

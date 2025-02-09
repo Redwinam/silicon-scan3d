@@ -25,19 +25,6 @@ var/
 .LSOverride
 ._*
 
-# Project specific
-turntable_scan/
-reconstruct
-reconstruct.swift
-*.usdz
-*.obj
-*.fbx
-*.mtl
-*.jpg
-*.JPG
-*.png
-*.PNG
-
 # IDE
 .idea/
 .vscode/
