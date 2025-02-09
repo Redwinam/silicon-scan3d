@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Project specific
+turntable_scan/
+reconstruct
+reconstruct.swift
+*.usdz
+*.obj
+*.fbx
+*.mtl
+*.jpg
+*.JPG
+*.png
+*.PNG
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
