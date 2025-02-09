@@ -1,122 +1,116 @@
-# 3D 扫描项目 - 成功扫描白色物体
+# SiliconScan3D
+
+> 基于Apple Silicon优化的3D物体扫描重建工具集
 
 ## 项目概述
 
-本项目记录了使用多种 3D 重建方法成功扫描白色物体的过程。主要挑战是重建一个表面特征很少的小型白色矩形物体。
+SiliconScan3D是一个利用Apple的Object Capture API将照片转化为高质量3D模型的工具集。项目特别优化了对于白色、低纹理物体的扫描过程，充分利用了Apple Silicon的神经引擎和Metal图形处理能力。
 
-## 设备配置
+## 系统要求
 
-- 相机：Sony 相机
-- 图像分辨率：8640 x 5760
-- 设置：黑色转盘配合参考图案
-- 物体尺寸：约 10 厘米
+- macOS 12或更高版本
+- 搭载Apple Silicon芯片的Mac设备
+- GPU内存至少4GB
+- Python 3.8或更高版本
 
-## 成功要点
+## 快速开始
 
-### 1. 参考图案
-
-- 创建了自定义 A4 尺寸参考图案：
-  - 不同大小的随机黑点
-  - 三角形图案提供额外特征
-  - 角落标记确保稳定性
-  - 中心区域留空放置物体
-
-### 2. 图像处理
-
-- 将图像缩小到原始尺寸的 25%（2160 x 1440）
-  - 减少噪声
-  - 提高处理速度
-  - 改善特征检测
-
-### 3. COLMAP 重建
-
-#### 特征提取参数
+### 1. 安装依赖
 
 ```bash
-colmap feature_extractor \
-    --database_path ~/Developer/3dscanner/turntable_scan/database.db \
-    --image_path "/Users/redwinam/Pictures/Sony Scan Resized" \
-    --ImageReader.camera_model OPENCV \
-    --SiftExtraction.max_num_features 32768 \
-    --SiftExtraction.edge_threshold 20 \
-    --SiftExtraction.peak_threshold 0.001 \
-    --SiftExtraction.max_num_orientations 2 \
-    --SiftExtraction.upright 1
+# 克隆项目
+git clone https://github.com/yourusername/silicon-scan3d.git
+cd silicon-scan3d
+
+# 安装Python依赖
+pip install -r requirements.txt
 ```
 
-#### 特征匹配参数
+### 2. 生成参考图案
 
 ```bash
-colmap exhaustive_matcher \
-    --database_path ~/Developer/3dscanner/turntable_scan/database.db \
-    --ExhaustiveMatching.block_size 50
+# 生成用于扫描的参考图案
+python create_reference_pattern.py
 ```
 
-#### 稀疏重建参数
+### 3. 拍摄照片
+
+1. 打印生成的参考图案
+2. 将物体放置在参考图案中心
+3. 使用转台或手动旋转物体，拍摄全方位照片
+4. 建议图片分辨率不超过4K，可使用`select_images.py`进行批量缩放
+
+### 4. 生成3D模型
 
 ```bash
-colmap mapper \
-    --database_path ~/Developer/3dscanner/turntable_scan/database.db \
-    --image_path "/Users/redwinam/Pictures/Sony Scan Resized" \
-    --output_path ~/Developer/3dscanner/turntable_scan/sparse \
-    --Mapper.init_min_tri_angle 4 \
-    --Mapper.multiple_models 1 \
-    --Mapper.ba_refine_focal_length 1 \
-    --Mapper.ba_refine_extra_params 1 \
-    --Mapper.min_num_matches 15 \
-    --Mapper.init_max_reg_trials 100
+# 使用Object Capture API生成模型
+python object_capture.py
 ```
 
-### 4. Apple Object Capture 重建
+生成的USDZ模型将保存在桌面上，可直接在Mac上预览或使用Reality Composer编辑。
 
-使用苹果原生的 Object Capture API 进行 3D 重建，效果非常好：
+## 工具说明
 
-#### 关键参数设置
+### create_reference_pattern.py
+
+生成用于3D扫描的参考图案，包含：
+- 随机大小的黑点
+- 三角形特征标记
+- 角落定位点
+- 预留的物体放置区域
 
 ```python
-config = PhotogrammetrySession.Configuration()
-config.featureSensitivity = .high  # 高特征敏感度，适合白色物体
-config.sampleOrdering = .sequential  # 图片按顺序排列
-config.isObjectMaskingEnabled = true  # 启用物体遮罩
+# 自定义参数
+python create_reference_pattern.py --size A4 --dots 1000 --min_size 2 --max_size 10
 ```
 
-#### 重建过程
+### select_images.py
 
-1. 使用缩放后的图片作为输入
-2. 设置最高质量重建
-3. 输出 USDZ 格式模型
-4. 可直接在 Mac 上预览和编辑
+图片处理工具，支持：
+- 批量缩放
+- 图片筛选
+- 重命名
 
-## 参数说明
+```python
+# 示例：每隔3张选择一张图片
+python select_images.py --input "照片文件夹" --step 3
+```
 
-### COLMAP 参数
+### object_capture.py
 
-- `max_num_features 32768`: 增加特征点数量
-- `edge_threshold 20`: 提高边缘检测灵敏度
-- `peak_threshold 0.001`: 降低特征点检测阈值
-- `upright 1`: 假设特征点垂直（适用于转台设置）
+核心3D重建工具，特性：
+- 使用Apple Object Capture API
+- 支持高质量USDZ输出
+- 优化的参数配置
 
-### Object Capture 参数
+```python
+# 示例：使用最高质量设置
+python object_capture.py --quality raw --sensitivity high
+```
 
-- `featureSensitivity = .high`: 提高特征检测灵敏度
-- `sampleOrdering = .sequential`: 优化相邻图片的匹配
-- `isObjectMaskingEnabled = true`: 自动分离物体和背景
+## 实际案例
 
-## 重建结果
+### 设备配置
+- 相机：Sony相机
+- 图像分辨率：8640 x 5760（建议缩放至25%）
+- 设置：黑色转盘配合参考图案
+- 物体尺寸：约10厘米
 
-成功重建白色物体的关键：
-
+### 最佳实践
 1. 使用参考图案提供稳定特征点
-2. 缩小图片尺寸改善特征检测
-3. 调整参数适应具有挑战性的表面
-4. 使用苹果原生 API 获得更好的重建效果
-
-## 未来扫描建议
-
-1. 始终使用参考图案
 2. 确保光照均匀，减少反射
-3. 拍摄时使用更小的角度步进
-4. 先用小图片处理，需要时再放大
-5. 优先尝试 Object Capture API，效果更好
+3. 每次旋转角度建议在10-15度
+4. 先用较小尺寸图片测试
+5. 使用`select_images.py`控制图片数量（建议30-60张）
 
-## 创建日期：2025 年 2 月 10 日
+## 其他重建方法
+
+除了Apple Object Capture API，本项目还支持使用COLMAP进行3D重建。详细信息请参考[COLMAP使用指南](./COLMAP_GUIDE.md)。
+
+## 许可证
+
+MIT
+
+## 创建日期
+
+2025年2月10日
